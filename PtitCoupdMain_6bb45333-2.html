@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<title>P’tit Coup d’Main - Courses et commissions Renens</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f1f5f4;color:#1f2937;font-size:18px}
+header{background:#0f766e;color:#fff;text-align:center;padding:22px 12px}
+header h1{font-size:40px;letter-spacing:1px}
+header p{font-style:italic;margin-top:4px}
+nav{display:flex;background:#115e59}
+nav button{flex:1;padding:14px;border:0;background:none;color:#fff;font-size:17px;cursor:pointer}
+nav button.on{background:#f59e0b;color:#000;font-weight:bold}
+main{max-width:640px;margin:auto;padding:14px}
+h2{color:#0f766e;margin:18px 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.svc{background:#fff;border:3px solid #fff;border-radius:14px;padding:14px;text-align:center;cursor:pointer;box-shadow:0 1px 4px #0002}
+.svc.on{border-color:#f59e0b;background:#fffbeb}
+.svc .ic{font-size:36px}.svc b{display:block;margin-top:4px}.svc small{color:#0f766e;font-weight:bold}
+.card{background:#fff;border-radius:14px;padding:16px;margin-top:12px;box-shadow:0 1px 4px #0002}
+label{display:block;margin:10px 0 4px;font-weight:bold}
+input,select,textarea{width:100%;padding:12px;font-size:18px;border:2px solid #cbd5e1;border-radius:10px}
+textarea{min-height:110px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{font-weight:normal;margin:0;background:#e2e8f0;padding:9px 13px;border-radius:20px;cursor:pointer}
+.chips input{width:auto;margin-right:5px}
+.chk{display:flex;align-items:center;gap:10px;font-weight:normal}.chk input{width:24px;height:24px}
+.alert{padding:12px;border-radius:10px;margin-top:10px}
+.ok{background:#dcfce7;color:#166534}.ko{background:#fee2e2;color:#991b1b}
+.recap{background:#0f766e;color:#fff}
+.recap td{padding:4px 0}.recap td:last-child{text-align:right}
+.total{font-size:28px;font-weight:bold;border-top:2px solid #fff8;padding-top:8px!important}
+.btn{display:block;width:100%;padding:18px;margin-top:14px;border:0;border-radius:14px;font-size:20px;font-weight:bold;cursor:pointer}
+.wa{background:#22c55e;color:#fff}.sec{background:#e2e8f0}
+.hide{display:none}
+.order{border-left:6px solid #f59e0b}
+.muted{color:#64748b;font-size:15px}
+footer{text-align:center;padding:24px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<header><h1 id="nom"></h1><p id="slogan"></p></header>
+<nav>
+ <button class="on" onclick="tab('cmd',this)">🛒 Commander</button>
+ <button onclick="tab('hist',this)">📋 Mes commandes</button>
+ <button onclick="tab('info',this)">ℹ️ Infos</button>
+</nav>
+
+<main>
+<section id="cmd">
+ <h2>1. Que pouvons-nous faire pour vous ?</h2>
+ <div class="grid" id="services"></div>
+
+ <div id="form" class="hide">
+  <div class="card">
+   <h2 style="margin-top:0">2. Vos coordonnées</h2>
+   <label class="chk"><input type="checkbox" id="proche" onchange="calc()"> Je commande pour un proche</label>
+   <div id="procheBox" class="hide">
+     <label>Votre nom (personne qui commande)</label><input id="nomCmd">
+   </div>
+   <label>Nom de la personne à livrer</label><input id="nomCli" autocomplete="name">
+   <label>Téléphone</label><input id="tel" type="tel" autocomplete="tel">
+   <label>Adresse (rue, n°, étage)</label><input id="adr" autocomplete="street-address">
+   <label>Commune</label><select id="commune" onchange="calc()"></select>
+  </div>
+
+  <div class="card" id="boxMagasins">
+   <h2 style="margin-top:0">3. Magasins</h2>
+   <div class="chips" id="magasins"></div>
+   <label>Votre liste</label>
+   <textarea id="liste" placeholder="Ex : 1 l de lait, 6 oeufs, 500 g de viande hachée..."></textarea>
+   <label class="chk"><input type="checkbox" id="remplace" checked> J'accepte un produit de remplacement similaire</label>
+   <label>Budget maximum pour les achats (CHF)</label><input id="budget" type="number" min="0" placeholder="Ex : 80">
+  </div>
+
+  <div class="card hide" id="boxPharma">
+   <h2 style="margin-top:0">3. Pharmacie</h2>
+   <label>Nom de la pharmacie</label><input id="pharma" placeholder="Ex : Pharmacie de Renens">
+   <label>Nom de la commande</label><input id="pharmaNom">
+   <p class="alert ok">La commande doit être préparée et payée à l'avance. Nous la livrons dans son emballage fermé, sans donner de conseil.</p>
+  </div>
+
+  <div class="card hide" id="boxMeuble">
+   <h2 style="margin-top:0">3. Votre meuble</h2>
+   <label>Lien de l'annonce (Tutti, Ricardo, IKEA...)</label><input id="lien" placeholder="https://...">
+   <label>Adresse où aller le chercher</label><input id="retrait">
+   <label>Dimensions (cm) et poids (kg)</label>
+   <div class="row"><input id="L" type="number" placeholder="Long." oninput="calc()"><input id="W" type="number" placeholder="Larg." oninput="calc()"><input id="H" type="number" placeholder="Haut." oninput="calc()"><input id="KG" type="number" placeholder="kg" oninput="calc()"></div>
+   <div id="limite"></div>
+   <label>Étages sans ascenseur</label><input id="etages" type="number" min="0" value="0" oninput="calc()">
+   <label>Montage simple (par tranche de 30 min)</label><input id="montage" type="number" min="0" value="0" oninput="calc()">
+  </div>
+
+  <div class="card hide" id="boxComm">
+   <h2 style="margin-top:0">3. Votre commission</h2>
+   <textarea id="comm" placeholder="Ex : déposer un colis à la Poste de Renens, récupérer une veste au pressing..."></textarea>
+  </div>
+
+  <div class="card">
+   <h2 style="margin-top:0">4. Quand ?</h2>
+   <div class="row"><div><label>Date</label><input id="date" type="date" onchange="calc()"></div>
+   <div><label>Créneau</label><select id="creneau" onchange="calc()">
+     <option>Matin (8h-12h)</option><option>Après-midi (12h-17h)</option><option>Soir (17h-19h)</option></select></div></div>
+   <label class="chk" style="margin-top:12px"><input type="checkbox" id="urgent" onchange="calc()"> Urgent (dans les 2 heures)</label>
+   <label>Remarque</label><input id="rem" placeholder="Code d'entrée, chien, etc.">
+  </div>
+
+  <div class="card recap">
+   <h2 style="margin-top:0;color:#fff">💰 Votre prix</h2>
+   <table style="width:100%" id="recap"></table>
+   <p class="muted" style="color:#d1fae5;margin-top:8px">+ le prix des achats, payé à l'avance par TWINT, selon le ticket de caisse.</p>
+  </div>
+  <label class="chk card"><input type="checkbox" id="cg"> J'accepte les conditions (onglet Infos)</label>
+  <button class="btn wa" onclick="envoyer()">📲 Envoyer ma commande par WhatsApp</button>
+ </div>
+</section>
+
+<section id="hist" class="hide"><h2>Mes commandes</h2><div id="liste_cmd"></div></section>
+
+<section id="info" class="hide">
+ <h2>Tarifs</h2><div class="card" id="tarifs"></div>
+ <h2>Conditions</h2>
+ <div class="card"><ul style="padding-left:20px;line-height:1.6">
+  <li>Le client paie le prix des achats à l'avance (TWINT). Le coursier n'avance jamais d'argent.</li>
+  <li>Le ticket de caisse est toujours remis au client.</li>
+  <li>Meubles : au maximum <span id="limTxt"></span>. Au-delà, sur devis ou refusé.</li>
+  <li>Médicaments : uniquement le retrait de commandes préparées par la pharmacie, sans conseil.</li>
+  <li>Pas d'alcool pour les mineurs, pas d'animaux, pas d'objets de valeur non emballés.</li>
+  <li>Annulation gratuite jusqu'à 2 h avant le créneau.</li>
+  <li>Attente au-delà de 10 min : 8 CHF par tranche de 15 min.</li>
+  <li>Vos données restent sur votre téléphone et ne servent qu'à votre commande.</li>
+ </ul></div>
+</section>
+</main>
+<footer id="foot"></footer>
+
+<script>
+/* ===== CONFIGURATION : modifiez ici ===== */
+const CONFIG = {
+  nom: "P’tit Coup d’Main",
+  slogan: "Un coup de main pour vos courses et commissions !",
+  whatsapp: "41763425974",          // votre numéro sans + ni espaces (ex : 41791234567)
+  ville: "Renens VD",
+  horaires: "Lu-Sa 8h-19h",
+  limites: { L:150, W:90, H:70, KG:50 }  // coffre Prius 2010 : à vérifier avec un mètre
+};
+const SERVICES = [
+  {id:"course",  ic:"🛒", nom:"Courses",           prix:25, txt:"1 magasin, 2 sacs"},
+  {id:"multi",   ic:"🏪", nom:"Multi-magasins",    prix:39, txt:"jusqu'à 3 magasins"},
+  {id:"pharma",  ic:"💊", nom:"Pharmacie",         prix:20, txt:"retrait + livraison"},
+  {id:"meuble",  ic:"🪑", nom:"Petit meuble",      prix:69, txt:"sans montage"},
+  {id:"comm",    ic:"📦", nom:"Commission",        prix:25, txt:"poste, pressing, colis"},
+  {id:"abo",     ic:"👵", nom:"Abonnement senior", prix:89, txt:"4 courses / mois"}
+];
+const MAGASINS = ["Lidl","Aldi","Denner","Migros","Coop","Boucherie","Boulangerie","Marché","Autre"];
+// km supplémentaires facturés hors zone (1 CHF/km, aller-retour inclus)
+const COMMUNES = {"Renens":0,"Prilly":0,"Crissier":0,"Chavannes-près-Renens":0,"Ecublens":0,
+ "Bussigny":0,"Lausanne (Ouest/Centre)":0,"Lausanne (Est)":6,"Jouxtens-Mézery":2,"Romanel":4,
+ "Le Mont-sur-Lausanne":6,"Cheseaux":6,"St-Sulpice":4,"Mex / Villars-Ste-Croix":4,
+ "Pully":10,"Epalinges":10,"Morges":14,"Autre (sur devis)":null};
+const SUP = {km:1, urgence:10, soirDim:10, etage:5, montage:25, magasinSup:8};
+/* ======================================= */
+
+let svc=null, total=0;
+const $=id=>document.getElementById(id);
+$("nom").textContent=CONFIG.nom; $("slogan").textContent=CONFIG.slogan;
+document.title=CONFIG.nom+" - "+CONFIG.ville;
+$("foot").innerHTML=`${CONFIG.nom} · ${CONFIG.ville} · ${CONFIG.horaires}<br>Paiement TWINT`;
+const lim=CONFIG.limites; $("limTxt").textContent=`${lim.L} × ${lim.W} × ${lim.H} cm et ${lim.KG} kg`;
+
+$("services").innerHTML=SERVICES.map(s=>`<div class="svc" id="s_${s.id}" onclick="choisir('${s.id}')">
+ <div class="ic">${s.ic}</div><b>${s.nom}</b><small>${s.id==='abo'?s.prix+' CHF/mois':'dès '+s.prix+' CHF'}</small></div>`).join("");
+$("magasins").innerHTML=MAGASINS.map(m=>`<label><input type="checkbox" value="${m}" onchange="calc()">${m}</label>`).join("");
+$("commune").innerHTML=Object.keys(COMMUNES).map(c=>`<option>${c}</option>`).join("");
+$("tarifs").innerHTML="<table style='width:100%'>"+SERVICES.map(s=>`<tr><td>${s.ic} ${s.nom} <span class='muted'>(${s.txt})</span></td><td align=right><b>${s.prix} CHF</b></td></tr>`).join("")+
+ `<tr><td colspan=2><hr style="margin:8px 0"></td></tr>
+ <tr><td>Hors zone</td><td align=right>${SUP.km} CHF/km</td></tr><tr><td>Urgence (2 h)</td><td align=right>${SUP.urgence} CHF</td></tr>
+ <tr><td>Soir / dimanche</td><td align=right>${SUP.soirDim} CHF</td></tr><tr><td>Étage sans ascenseur</td><td align=right>${SUP.etage} CHF</td></tr>
+ <tr><td>Montage (30 min)</td><td align=right>${SUP.montage} CHF</td></tr><tr><td>Magasin en plus (au-delà de 3)</td><td align=right>${SUP.magasinSup} CHF</td></tr></table>`;
+$("date").valueAsDate=new Date();
+
+function tab(id,b){["cmd","hist","info"].forEach(t=>$(t).classList.toggle("hide",t!==id));
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));b.classList.add("on");if(id==="hist")histo();}
+
+function choisir(id){svc=id;document.querySelectorAll(".svc").forEach(e=>e.classList.remove("on"));$("s_"+id).classList.add("on");
+ $("form").classList.remove("hide");
+ $("boxMagasins").classList.toggle("hide",!["course","multi","abo"].includes(id));
+ $("boxPharma").classList.toggle("hide",id!=="pharma");$("boxMeuble").classList.toggle("hide",id!=="meuble");
+ $("boxComm").classList.toggle("hide",id!=="comm");calc();$("form").scrollIntoView({behavior:"smooth"});}
+
+function calc(){
+ if(!svc)return; $("procheBox").classList.toggle("hide",!$("proche").checked);
+ const lignes=[]; let s=SERVICES.find(x=>x.id===svc);
+ const mags=[...document.querySelectorAll("#magasins input:checked")].map(i=>i.value);
+ if(svc==="course"&&mags.length>1){svc="multi";choisir("multi");return;}
+ lignes.push([s.ic+" "+s.nom,s.prix]);
+ if(["multi","abo"].includes(svc)&&mags.length>3)lignes.push([`${mags.length-3} magasin(s) en plus`,(mags.length-3)*SUP.magasinSup]);
+ const km=COMMUNES[$("commune").value];
+ if(km>0)lignes.push([`Hors zone (${km} km)`,km*SUP.km]);
+ if($("urgent").checked)lignes.push(["Urgence",SUP.urgence]);
+ const d=new Date($("date").value);
+ if($("creneau").selectedIndex===2||d.getDay()===0)lignes.push(["Soir / dimanche",SUP.soirDim]);
+ let devis=km===null;
+ if(svc==="meuble"){
+  const v={L:+$("L").value,W:+$("W").value,H:+$("H").value,KG:+$("KG").value};
+  const trop=Object.keys(lim).filter(k=>v[k]>lim[k]);
+  const dims=[v.L,v.W,v.H].filter(x=>x>0).sort((a,b)=>b-a);
+  $("limite").innerHTML=!v.L&&!v.KG?"":trop.length
+   ?`<p class="alert ko">❌ Trop grand ou trop lourd pour notre véhicule (max ${lim.L}×${lim.W}×${lim.H} cm, ${lim.KG} kg). Envoyez quand même la demande : nous vous ferons un devis.</p>`
+   :`<p class="alert ok">✅ Ça passe ! Le meuble respecte nos limites.</p>`;
+  if(trop.length)devis=true;
+  const e=+$("etages").value||0,m=+$("montage").value||0;
+  if(e>0)lignes.push([`${e} étage(s) sans ascenseur`,e*SUP.etage]);
+  if(m>0)lignes.push([`Montage ${m*30} min`,m*SUP.montage]);
+ }
+ total=lignes.reduce((a,l)=>a+l[1],0);
+ $("recap").innerHTML=lignes.map(l=>`<tr><td>${l[0]}</td><td>${l[1]} CHF</td></tr>`).join("")+
+  `<tr><td class="total">Total service</td><td class="total">${devis?"Sur devis":total+" CHF"}</td></tr>`;
+ window._lignes=lignes;window._devis=devis;window._mags=mags;
+}
+
+function envoyer(){
+ if(!svc)return alert("Choisissez un service.");
+ if(!$("nomCli").value||!$("tel").value||!$("adr").value)return alert("Merci d'indiquer le nom, le téléphone et l'adresse.");
+ if(!$("cg").checked)return alert("Merci d'accepter les conditions.");
+ const s=SERVICES.find(x=>x.id===svc);
+ let t=`*Nouvelle commande ${CONFIG.nom}*\nService : ${s.nom}\n`;
+ if($("proche").checked)t+=`Commandé par : ${$("nomCmd").value}\n`;
+ t+=`Client : ${$("nomCli").value}\nTél : ${$("tel").value}\nAdresse : ${$("adr").value}, ${$("commune").value}\n`;
+ t+=`Date : ${$("date").value} - ${$("creneau").value}${$("urgent").checked?" - URGENT":""}\n\n`;
+ if(["course","multi","abo"].includes(svc))t+=`Magasins : ${window._mags.join(", ")||"-"}\nListe :\n${$("liste").value}\nRemplacement accepté : ${$("remplace").checked?"oui":"non"}\nBudget max : ${$("budget").value||"-"} CHF\n`;
+ if(svc==="pharma")t+=`Pharmacie : ${$("pharma").value}\nAu nom de : ${$("pharmaNom").value}\n`;
+ if(svc==="meuble")t+=`Annonce : ${$("lien").value}\nRetrait : ${$("retrait").value}\nDimensions : ${$("L").value}x${$("W").value}x${$("H").value} cm, ${$("KG").value} kg\nÉtages : ${$("etages").value}, montage : ${$("montage").value*30} min\n`;
+ if(svc==="comm")t+=`Commission : ${$("comm").value}\n`;
+ if($("rem").value)t+=`Remarque : ${$("rem").value}\n`;
+ t+=`\n*Prix service : ${window._devis?"sur devis":total+" CHF"}* (+ achats, TWINT)`;
+ const h=JSON.parse(localStorage.getItem("ptitcoupdmain")||"[]");
+ h.unshift({d:new Date().toLocaleString("fr-CH"),svc:s.ic+" "+s.nom,prix:window._devis?"devis":total+" CHF",t});
+ localStorage.setItem("ptitcoupdmain",JSON.stringify(h.slice(0,30)));
+ window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(t)}`,"_blank");
+}
+
+function histo(){const h=JSON.parse(localStorage.getItem("ptitcoupdmain")||"[]");
+ $("liste_cmd").innerHTML=h.length?h.map((o,i)=>`<div class="card order"><b>${o.svc}</b> - ${o.prix}<br><span class="muted">${o.d}</span>
+ <button class="btn sec" onclick="renvoyer(${i})">🔁 Commander à nouveau</button></div>`).join(""):"<p class='card'>Aucune commande pour l'instant.</p>";}
+function renvoyer(i){const o=JSON.parse(localStorage.getItem("ptitcoupdmain"))[i];window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(o.t)}`,"_blank");}
+</script>
+
+<div id="ptc-contact" style="margin:16px;padding:16px;border-radius:14px;background:#fff4e6;border:2px solid #f39c12;font-family:sans-serif;font-size:18px">
+ <h3 style="margin-top:0">📞 Contact</h3>
+ <p><a href="tel:+41763425974" style="display:block;padding:12px;margin:6px 0;background:#2e86de;color:#fff;border-radius:10px;text-align:center;text-decoration:none">📞 Appeler le 076 342 59 74</a></p>
+ <p><a href="https://wa.me/41763425974" style="display:block;padding:12px;margin:6px 0;background:#25d366;color:#fff;border-radius:10px;text-align:center;text-decoration:none">💬 WhatsApp</a></p>
+ <p><a href="mailto:vrmyriam@yahoo.fr" style="display:block;padding:12px;margin:6px 0;background:#555;color:#fff;border-radius:10px;text-align:center;text-decoration:none">✉️ vrmyriam@yahoo.fr</a></p>
+ <p style="font-size:15px;margin-bottom:0">Lundi à samedi, 8h-19h · Renens et Ouest lausannois</p>
+</div>
+<footer style="text-align:center;font-family:sans-serif;font-size:14px;color:#666;padding:14px 8px 30px">P'tit Coup d'Main · 076 342 59 74 · vrmyriam@yahoo.fr</footer>
+
+</body>
+</html>
