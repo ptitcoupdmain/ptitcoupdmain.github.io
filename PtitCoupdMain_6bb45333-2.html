@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="P'tit Coup d'Main">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
 <title>P’tit Coup d’Main - Courses et commissions Renens</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -258,6 +266,35 @@ function renvoyer(i){const o=JSON.parse(localStorage.getItem("ptitcoupdmain"))[i
  <p style="font-size:15px;margin-bottom:0">Lundi à samedi, 8h-19h · Renens et Ouest lausannois</p>
 </div>
 <footer style="text-align:center;font-family:sans-serif;font-size:14px;color:#666;padding:14px 8px 30px">P'tit Coup d'Main · 076 342 59 74 · vrmyriam@yahoo.fr</footer>
+
+
+<div id="ptc-install" style="display:none;position:fixed;left:10px;right:10px;bottom:10px;z-index:999;background:#0f766e;color:#fff;border-radius:16px;padding:14px;box-shadow:0 4px 16px #0005;font-family:Arial,sans-serif;font-size:17px">
+ <div style="display:flex;align-items:center;gap:12px">
+  <img src="icon-512.png" alt="" style="width:52px;height:52px;border-radius:12px;background:#fff">
+  <div style="flex:1"><b>Installez l'application</b><br><span id="ptc-install-txt" style="font-size:15px">Pour l'avoir sur votre écran d'accueil</span></div>
+  <button onclick="ptcHide()" aria-label="Fermer" style="background:none;border:0;color:#fff;font-size:26px;cursor:pointer">✕</button>
+ </div>
+ <button id="ptc-install-btn" style="display:none;width:100%;margin-top:10px;padding:14px;border:0;border-radius:12px;background:#f59e0b;color:#000;font-size:19px;font-weight:bold;cursor:pointer">📲 Installer</button>
+</div>
+<script>
+(function(){
+ var std = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+ var box = document.getElementById('ptc-install'), btn = document.getElementById('ptc-install-btn'), txt = document.getElementById('ptc-install-txt');
+ var dp = null;
+ window.ptcHide = function(){ box.style.display='none'; try{sessionStorage.setItem('ptcHide','1')}catch(e){} };
+ var hidden = false; try{hidden = sessionStorage.getItem('ptcHide')==='1'}catch(e){}
+ if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
+ if (std || hidden) return;
+ window.addEventListener('beforeinstallprompt', function(e){
+   e.preventDefault(); dp = e; btn.style.display='block'; box.style.display='block';
+ });
+ btn.onclick = function(){ if(!dp) return; dp.prompt(); dp.userChoice.then(function(){ dp=null; box.style.display='none'; }); };
+ window.addEventListener('appinstalled', function(){ box.style.display='none'; });
+ var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+ if (ios) { txt.innerHTML = 'Touchez <b>Partager</b> ⬆️ puis <b>« Sur l\'écran d\'accueil »</b>'; box.style.display='block'; }
+ else { setTimeout(function(){ if(!dp){ txt.innerHTML = 'Touchez <b>⋮</b> en haut à droite, puis <b>« Installer l\'application »</b> ou <b>« Ajouter à l\'écran d\'accueil »</b>'; box.style.display='block'; } }, 4000); }
+})();
+</script>
 
 </body>
 </html>
